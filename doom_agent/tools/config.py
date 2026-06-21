@@ -8,8 +8,9 @@ Agent configuration states.
 config.py
 """
 
-import sys
 import argparse
+import sys
+import torch
 
 
 class Config():
@@ -21,6 +22,7 @@ class Config():
         self.agent = ""
         self.debug_agent = False
         self.train_agent = False
+        self.device = None
 
 
     def print_help(self, option):
@@ -59,3 +61,23 @@ class Config():
             self.train_agent = 't' in self.agent
         else:
             self.print_help(args.agent)
+
+
+    def dev(self):
+        """
+        Configure which torch device to use.
+        """
+        self.device = (
+            "mps" if torch.backends.mps.is_available() else
+            "cuda" if torch.cuda.is_available() else
+            "cpu"
+        )
+        print(f"Using device: {self.device}")
+
+
+    def init(self):
+        """
+        Initial configuration.
+        """
+        self.args()
+        self.dev()
