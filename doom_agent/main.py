@@ -41,6 +41,9 @@ def init():
     bc_trainer.init()
     ppo_trainer.init()
 
+    encoder.test_clip()
+    encoder.test_zero_shot()
+
 
 def main():
     init()

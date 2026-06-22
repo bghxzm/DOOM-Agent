@@ -13,6 +13,16 @@ import sys
 import torch
 
 
+#
+# Model architecture and pre-trained weights.
+#
+MODELS = [
+    ("ViT-B-32", "laion2b_s34b_b79k"), # Smaller ViT - baseline
+    ("ViT-L-14", "laion2b_s32b_b82k"), # Larger ViT   - larger size impact
+    ("convnext_base_w", "laion2b_s13b_b82k_augreg"), # ConvNet architecture
+]
+
+
 class Config():
     """
     Configuration states.

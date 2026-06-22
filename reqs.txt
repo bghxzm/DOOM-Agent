@@ -1,2 +1,9 @@
 torch
 vizdoom
+open_clip_torch
+numpy
+pandas
+matplotlib
+pillow
+scikit-image
+scikit-learn
