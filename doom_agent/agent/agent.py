@@ -13,15 +13,18 @@ class Agent():
     """
     Agent
     """
-    def __init__(self, debug, train):
-        self.debug = debug
-        self.train = train
+    def __init__(self):
+        self.mode = None
 
+    def init(self, mode):
+        """
+        Initialize the agent and set it's mode.
+        """
+        self.mode = mode
 
-    def run(self):
-        if self.debug:
+        if mode == "debug":
             print(f"Debug Agent!")
-        if self.train:
+        elif mode == "train":
             print(f"Training Agent!")
-        if not self.debug and not self.train:
+        else:
             print(f"Default Agent!")

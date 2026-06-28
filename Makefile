@@ -55,3 +55,9 @@ debug_agent:
 
 agent:
 	@make main ARGS="--agent"
+
+test_encoder:
+	@make main ARGS="--enc"
+
+test_environment:
+	@make main ARGS="--env"

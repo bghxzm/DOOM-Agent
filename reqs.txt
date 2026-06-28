@@ -3,6 +3,7 @@ vizdoom
 open_clip_torch
 numpy
 pandas
+openpyxl
 matplotlib
 pillow
 scikit-image

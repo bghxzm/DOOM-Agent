@@ -30,12 +30,15 @@ class Config():
     def __init__(self):
         self.agent_args = set('atd')
         self.agent = ""
-        self.debug_agent = False
-        self.train_agent = False
+        self.encoder = ""
+        self.environment = ""
         self.device = None
-
+        self.model = None
 
     def print_help(self, option):
+        """
+        Invalid config help
+        """
         help_msg=(
             "Usage:\n"
             "  --agent=<options>\n"
@@ -43,6 +46,8 @@ class Config():
             "  a    default\n"
             "  d    debug\n"
             "  t    training\n"
+            "  --encoder\n"
+            "  --environment\n"
         )
 
         if option is None:
@@ -53,7 +58,6 @@ class Config():
         print(help_msg)
         sys.exit()
 
-
     def args(self):
         """
         Parse through the arguments input at runtime.
@@ -61,17 +65,28 @@ class Config():
         parser = argparse.ArgumentParser("")
         parser.add_argument("--agent", type=str, nargs='?', const="a",
                             default="")
+        parser.add_argument("--encoder", type=str, nargs='?', const="a",
+                            default="")
+        parser.add_argument("--environment", type=str, nargs='?', const="a",
+                            default="")
         args = parser.parse_args()
 
         self.agent = args.agent
-        if not self.agent:
+        self.encoder = args.encoder
+        self.environment = args.environment
+        if not self.agent and not self.encoder and not self.environment:
             self.print_help(None)
         elif set(self.agent).issubset(self.agent_args):
-            self.debug_agent = 'd' in self.agent
-            self.train_agent = 't' in self.agent
+            if 'd' in self.agent:
+                self.agent = "debug"
+            elif 't' in self.agent:
+                self.agent = "train"
+        elif self.encoder:
+            self.encoder = "encoder"
+        elif self.environment:
+            self.environment = "environment"
         else:
-            self.print_help(args.agent)
-
+            self.print_help(args)
 
     def dev(self):
         """
@@ -83,7 +98,6 @@ class Config():
             "cpu"
         )
         print(f"Using device: {self.device}")
-
 
     def init(self):
         """

@@ -21,40 +21,54 @@ from training.ppo_trainer import PPO_Trainer
 
 
 def init():
+    """
+    Initialize every package.
+    """
     relabeler = Relabeler()
-    collector = Collector()
-    encoder = CLIP_Encoder()
-    env = ViZDoom_Env()
-    buffer = Buffer()
-    policy_head = Policy_Head()
-    temporal_transformer = Temporal_Transformer()
-    bc_trainer = BC_Trainer()
-    ppo_trainer = PPO_Trainer()
-
     relabeler.init()
-    collector.init()
-    encoder.init()
-    env.init()
-    buffer.init()
-    policy_head.init()
-    temporal_transformer.init()
-    bc_trainer.init()
-    ppo_trainer.init()
 
-    encoder.test_clip()
-    encoder.test_zero_shot()
+    collector = Collector()
+    collector.init()
+
+    buffer = Buffer()
+    buffer.init()
+
+    policy_head = Policy_Head()
+    policy_head.init()
+
+    temporal_transformer = Temporal_Transformer()
+    temporal_transformer.init()
+
+    bc_trainer = BC_Trainer()
+    bc_trainer.init()
+
+    ppo_trainer = PPO_Trainer()
+    ppo_trainer.init()
 
 
 def main():
+    """
+    Main application loop.
+    """
     init()
 
     cfg = Config()
     cfg.init()
 
     if cfg.agent:
-        print("Running Agent!")
-        a = Agent(cfg.debug_agent, cfg.train_agent)
-        a.run()
+        a = Agent()
+        a.init(cfg.agent)
+    elif cfg.encoder:
+        encoder = CLIP_Encoder()
+        encoder.init()
+        encoder.test_clip()
+        encoder.test_zero_shot()
+    elif cfg.environment:
+        env = ViZDoom_Env()
+        env.init()
+        env.run_default_scenario()
+        env.test_basic_loop()
+
 
 if __name__ == "__main__":
     main()
