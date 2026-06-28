@@ -225,3 +225,9 @@ CLAUDE.md
 
 # ViZDOOM
 *.ini
+
+# Excel
+*.xlsx
+
+# Cache
+cache/*

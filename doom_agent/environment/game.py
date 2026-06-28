@@ -8,9 +8,9 @@ ViZDoom game handler
 game.py
 """
 
-import itertools
-import os
 from argparse import ArgumentParser
+from pathlib import Path
+import itertools
 import vizdoom as vzd
 
 
@@ -18,19 +18,20 @@ class Game():
     """
     Game Handler
     """
-    def __init__(self):
+    def __init__(self, path="./scenarios"):
+        self.path = Path(path)
         self.game = None
-        self.config = None
+        self.game_cfg = None
         self.actions = []
 
-    def init(self, path="../scenarios/", cfg="basic.cfg",
-             resolution=vzd.ScreenResolution.RES_640X480,
+    def init(self, game_cfg="basic", resolution=vzd.ScreenResolution.RES_640X480,
              visible=True):
         """
         Initialize the game.
         """
-        self.config = cfg
-        default_config = os.path.join(path, self.config)
+        self.game_cfg = game_cfg
+        cfg_file = self.game_cfg + ".cfg"
+        default_config = self.path / cfg_file
 
         parser = ArgumentParser("ViZDoom Scenarios")
         parser.add_argument(
@@ -39,7 +40,7 @@ class Game():
             nargs="?",
             help="Path to the configuration file of the scenario."
             " Please see "
-            "../scenarios/*cfg for more scenarios."
+            "./scenarios/*cfg for more scenarios."
         )
         args, _ = parser.parse_known_args()
         run_config = args.config
@@ -54,7 +55,7 @@ class Game():
         # Choose scenario config file you wish to watch.
         # Don't load two configs cause the second will overwrite the first one.
         # Multiple config files are ok but combining these ones doesn't make much sense.
-        self.game.load_config(run_config)
+        self.game.load_config(str(run_config))
 
         self.game.set_screen_resolution(resolution)
         self.game.set_window_visible(visible)

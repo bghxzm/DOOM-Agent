@@ -19,15 +19,17 @@ class ViZDoom_Env():
     """
     ViZDoom wrapper + HUD collection
     """
-    def __init__(self):
+    def __init__(self, config=None):
+        self.config = config
+        self.scenario_path = self.config['scenario_path']
+        self.artifacts_path = self.config['artifacts_path']
         self.eps = None
-        self.scn = None
         self.g = None
 
     def init(self):
         print("ViZDoom Env!")
         self.eps = Episode()
-        self.g = Game()
+        self.g = Game(path=self.scenario_path)
         self.g.init()
 
     def run_default_scenario(self, episodes=10, sleep_time=0.028):
@@ -52,7 +54,7 @@ class ViZDoom_Env():
                 if sleep_time > 0:
                     sleep(sleep_time)
 
-        self.eps.output_episode(self.g.config)
+        self.eps.output_episode(game_cfg=self.g.game_cfg, path=self.artifacts_path)
         self.eps.clean_episode()
         self.g.game.close()
 

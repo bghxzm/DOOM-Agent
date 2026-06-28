@@ -7,7 +7,7 @@ Dr. Alhassan S. Yasin
 main.py
 """
 
-from tools.config import Config
+from config import Config
 from agent.agent import Agent
 from data.relabeler import Relabeler
 from data.collector import Collector
@@ -45,7 +45,6 @@ def init():
     ppo_trainer = PPO_Trainer()
     ppo_trainer.init()
 
-
 def main():
     """
     Main application loop.
@@ -54,21 +53,24 @@ def main():
 
     cfg = Config()
     cfg.init()
+    cfg.print_config()
 
-    if cfg.agent:
+    if cfg.config['agent']:
         a = Agent()
         a.init(cfg.agent)
-    elif cfg.encoder:
-        encoder = CLIP_Encoder()
+    elif cfg.config['encoder']:
+        encoder = CLIP_Encoder(config=cfg.config)
         encoder.init()
-        encoder.test_clip()
-        encoder.test_zero_shot()
-    elif cfg.environment:
-        env = ViZDoom_Env()
+        if cfg.config['test']:
+            encoder.run_open_clip()
+            # encoder.test_clip()
+            # encoder.test_zero_shot()
+    elif cfg.config['environment']:
+        env = ViZDoom_Env(config=cfg.config)
         env.init()
-        env.run_default_scenario()
-        env.test_basic_loop()
-
+        if cfg.config['test']:
+            env.run_default_scenario()
+            env.test_basic_loop()
 
 if __name__ == "__main__":
     main()

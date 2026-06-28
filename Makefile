@@ -18,7 +18,7 @@ ARGS=
 
 
 #
-# Default target.  Ex: make or make ARGS="--agent=dt"
+# Default target.  Ex: make or make ARGS="--agent=t"
 #
 main: ${VENV}
 	@${RUN_CMD} ${DOOM_DIR}/$@.py ${ARGS}
@@ -50,14 +50,11 @@ setup: ${VENV}
 train_agent:
 	@make main ARGS="--agent=t"
 
-debug_agent:
-	@make main ARGS="--agent=dt"
-
 agent:
 	@make main ARGS="--agent"
 
 test_encoder:
-	@make main ARGS="--enc"
+	@make main ARGS="--encoder --test"
 
 test_environment:
-	@make main ARGS="--env"
+	@make main ARGS="--environment --test"
