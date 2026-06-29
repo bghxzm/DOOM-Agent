@@ -63,6 +63,7 @@ class Episode():
         print("Ammo:", ammo)
         print("Armor:", armor)
         print("=====================")
+        # print(f"rgb_buffer {rgb_screen}")
         # print("Array Shape:", rgb_screen.shape) # (Channel,Height,Width)
         # print("Data Type:", rgb_screen.dtype)   # Output will be uint8 (values 0-255)
 

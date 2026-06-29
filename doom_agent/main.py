@@ -30,14 +30,8 @@ def init():
     collector = Collector()
     collector.init()
 
-    buffer = Buffer()
-    buffer.init()
-
     policy_head = Policy_Head()
     policy_head.init()
-
-    temporal_transformer = Temporal_Transformer()
-    temporal_transformer.init()
 
     bc_trainer = BC_Trainer()
     bc_trainer.init()
@@ -58,19 +52,32 @@ def main():
     if cfg.config['agent']:
         a = Agent()
         a.init(cfg.agent)
-    elif cfg.config['encoder']:
+    elif cfg.config['encoder'] and cfg.config['test']:
         encoder = CLIP_Encoder(config=cfg.config)
         encoder.init()
-        if cfg.config['test']:
-            encoder.run_open_clip()
-            # encoder.test_clip()
-            # encoder.test_zero_shot()
-    elif cfg.config['environment']:
+        encoder.run_open_clip()
+        encoder.test_clip()
+        encoder.test_zero_shot()
+    elif cfg.config['environment'] and cfg.config['test']:
         env = ViZDoom_Env(config=cfg.config)
         env.init()
-        if cfg.config['test']:
-            env.run_default_scenario()
-            env.test_basic_loop()
+        env.run_default_scenario()
+        env.test_basic_loop()
+
+    encoder = CLIP_Encoder(config=cfg.config)
+    encoder.init()
+
+    buffer = Buffer()
+    buffer.init()
+
+    transformer = Temporal_Transformer()
+    transformer.to(cfg.config['device'])
+    transformer.init()
+
+    env = ViZDoom_Env(config=cfg.config, encoder=encoder, buffer=buffer,
+                      transformer=transformer)
+    env.init()
+    env.run_default_scenario()
 
 if __name__ == "__main__":
     main()

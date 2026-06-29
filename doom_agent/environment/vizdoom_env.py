@@ -19,8 +19,12 @@ class ViZDoom_Env():
     """
     ViZDoom wrapper + HUD collection
     """
-    def __init__(self, config=None):
+    def __init__(self, config=None, encoder=None, buffer=None,
+                 transformer=None):
         self.config = config
+        self.encoder = encoder
+        self.buffer = buffer
+        self.transformer = transformer
         self.scenario_path = self.config['scenario_path']
         self.artifacts_path = self.config['artifacts_path']
         self.eps = None
@@ -32,7 +36,7 @@ class ViZDoom_Env():
         self.g = Game(path=self.scenario_path)
         self.g.init()
 
-    def run_default_scenario(self, episodes=10, sleep_time=0.028):
+    def run_default_scenario(self, episodes=1, sleep_time=0.028):
         """
         Run the default scenario game loop.
         """
@@ -49,6 +53,39 @@ class ViZDoom_Env():
                 # Makes a random action and save the reward.
                 reward = self.g.game.make_action(choice(self.g.actions))
                 self.eps.log_episode(i+1, self.g.game, state, reward)
+
+                frame = state.screen_buffer # shape (3, H, W), uint8
+                frame_emb = self.encoder.encode_frame(frame)
+                goal_emb = self.encoder.encode_subgoal("find the red door")
+
+                if self.config['debug']:
+                    print(frame_emb.shape)  # should be torch.Size([512]) ✔
+                    print(goal_emb.shape)   # should be torch.Size([512]) ✔
+                    print(frame_emb.norm()) # should be approx. 1.0 ✔ (1.0000)
+                    print(goal_emb.norm())  # should be approx. 1.0 ✔ (1.)
+
+                health = self.g.game.get_game_variable(vzd.GameVariable.HEALTH)
+                ammo = self.g.game.get_game_variable(vzd.GameVariable.AMMO2)
+                armor = self.g.game.get_game_variable(vzd.GameVariable.ARMOR)
+
+                self.buffer.push(frame_emb, goal_emb, health, ammo, armor)
+                window = self.buffer.get_window().to(self.config['device'])
+
+                if self.config['debug']:
+                    print(window.shape) # torch.Size([8, 1027]) ✔
+                    print(window.dtype) # torch.float32 ✔
+
+                    # Confirms that padding is working.  The first 7 rows
+                    # should be all zeros (tensor(0.)) and only the last
+                    # row should have data.
+                    print("window[0].sum",window[0].sum()) # ✔
+
+                out = self.transformer.forward(window)
+
+                if self.config['debug']:
+                    print(out.shape) # torch.Size([256]) ✔
+                    print(out.dtype) # torch.float32 ✔
+
 
                 # Sleep some time because processing is too fast to watch.
                 if sleep_time > 0:
