@@ -47,11 +47,6 @@ class Game():
 
         self.game = vzd.DoomGame()
 
-        # Creates all possible actions depending on how many buttons there are.
-        actions_num = self.game.get_available_buttons_size()
-        for perm in itertools.product([False, True], repeat=actions_num):
-            self.actions.append(list(perm))
-
         # Choose scenario config file you wish to watch.
         # Don't load two configs cause the second will overwrite the first one.
         # Multiple config files are ok but combining these ones doesn't make much sense.
@@ -63,3 +58,8 @@ class Game():
         # Sets format to 3 channels of 8-bit values in RGB order [Channels,Height,Width]
         self.game.set_screen_format(vzd.ScreenFormat.CRCGCB)
         self.game.init()
+
+        # Creates all possible actions depending on how many buttons there are.
+        actions_num = self.game.get_available_buttons_size()
+        for perm in itertools.product([False, True], repeat=actions_num):
+            self.actions.append(list(perm))

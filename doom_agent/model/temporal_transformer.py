@@ -38,7 +38,7 @@ class Temporal_Transformer(nn.Module):
         mismatch.
         '''
         super().__init__()
-        self.hidden_dim =- hidden_dim
+        self.hidden_dim = hidden_dim
         self.input_proj = nn.Linear(input_dim, hidden_dim) # applied to each N row independently
         layer = nn.TransformerEncoderLayer(
             d_model=hidden_dim,

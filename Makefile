@@ -58,3 +58,6 @@ test_encoder:
 
 test_environment:
 	@make main ARGS="--environment --test"
+
+collect_data:
+	@make main ARGS="--collect"

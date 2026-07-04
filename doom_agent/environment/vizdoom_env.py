@@ -10,7 +10,8 @@ vizdoom_env.py
 
 from environment.episode import Episode
 from environment.game import Game
-from random import choice
+from model.policy_head import Policy_Head
+# from random import choice
 from time import sleep
 import vizdoom as vzd
 
@@ -27,14 +28,18 @@ class ViZDoom_Env():
         self.transformer = transformer
         self.scenario_path = self.config['scenario_path']
         self.artifacts_path = self.config['artifacts_path']
-        self.eps = None
-        self.g = None
+        self.eps = Episode()
+        self.g = Game(path=self.scenario_path)
+        self.policy_head = None
 
     def init(self):
         print("ViZDoom Env!")
-        self.eps = Episode()
-        self.g = Game(path=self.scenario_path)
+        # self.eps = Episode()
+        # self.g = Game(path=self.scenario_path)
         self.g.init()
+        self.policy_head = Policy_Head(hidden_dim=256,
+                                       num_actions=len(self.g.actions))
+        self.policy_head.to(self.config['device'])
 
     def run_default_scenario(self, episodes=1, sleep_time=0.028):
         """
@@ -43,16 +48,12 @@ class ViZDoom_Env():
         for i in range(episodes):
             print(f"Episode #{i+1}")
 
-            # Not needed for the first episode but the loop is nicer.
             self.g.game.new_episode()
+            self.buffer.reset()
+
             while not self.g.game.is_episode_finished():
-                # Gets the state and possibly to something with it.
                 state = self.g.game.get_state()
                 assert state is not None
-
-                # Makes a random action and save the reward.
-                reward = self.g.game.make_action(choice(self.g.actions))
-                self.eps.log_episode(i+1, self.g.game, state, reward)
 
                 frame = state.screen_buffer # shape (3, H, W), uint8
                 frame_emb = self.encoder.encode_frame(frame)
@@ -86,6 +87,34 @@ class ViZDoom_Env():
                     print(out.shape) # torch.Size([256]) ✔
                     print(out.dtype) # torch.float32 ✔
 
+                # logits shape should be 8 because we are generating every
+                # possible combination of button presses.  For the basic
+                # scenario (3 buttons: MOVE_LEFT, MOVE_RIGHT, ATTACK) that is
+                # 2^3 = 8 combinations. The policy head picks the combination
+                # with the highest score:
+                # [F, F, F] # do nothing
+                # [F, F, T] # attack
+                # [F, T, F] # move right
+                # [F, T, T] # move right + attack
+                # [T, F, F] # move left
+                # [T, F, T] # move left + attack
+                # [T, T, F] # move left + right (nothing happens)
+                # [T, T, T] # move left + right + attack
+                logits = self.policy_head.forward(out)
+                print(logits.shape) # torch.Size([8]) ✔
+                print(logits.dtype) # torch.float32 ✔
+
+                action_idx = self.policy_head.select_action(logits)
+                print(type(action_idx)) # <class 'int'> ✔
+                print(0 <= action_idx < len(self.g.actions)) # True ✔
+
+                action = self.g.actions[action_idx]
+
+                # Makes a random action and save the reward.
+                # reward = self.g.game.make_action(choice(self.g.actions))
+                reward = self.g.game.make_action(action)
+
+                self.eps.log_episode(i+1, self.g.game, state, reward)
 
                 # Sleep some time because processing is too fast to watch.
                 if sleep_time > 0:

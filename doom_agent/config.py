@@ -46,6 +46,8 @@ class Config():
             "scenario_path": None,
             "encoder": False,
             "environment": False,
+            "collect": False,
+            "episodes": 20,
             "test": False,
             "debug": False
         }
@@ -106,6 +108,8 @@ class Config():
             "  --scenario=<dir>\n"
             "\n"
             "  dir\n"
+            "  --collect\n"
+            "  --episodes=<num>\n"
             "  --debug\n"
         )
         if option is None:
@@ -175,7 +179,8 @@ class Config():
         Parse through the arguments input at runtime.
         """
         valid = ["agent", "encoder", "model", "device", "environment",
-                 "test", "artifacts", "cache", "scenario", "debug"]
+                 "test", "artifacts", "cache", "scenario", "collect",
+                 "episodes", "debug"]
 
         parser = argparse.ArgumentParser("")
         for v in valid:
@@ -213,6 +218,12 @@ class Config():
             elif arg == "scenario":
                 if (getattr(args, arg) != ''):
                     self.choose_scenario_path(getattr(args, arg))
+            elif arg == "collect":
+                if (getattr(args, arg) == None):
+                    self.config['collect'] = True
+            elif arg == "episodes":
+                if (getattr(args, arg) != ''):
+                    self.config['episodes'] = int(getattr(args, arg))
             elif arg == "debug":
                 if (getattr(args, arg) == None):
                     self.config['debug'] = True

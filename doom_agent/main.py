@@ -27,11 +27,8 @@ def init():
     relabeler = Relabeler()
     relabeler.init()
 
-    collector = Collector()
-    collector.init()
-
-    policy_head = Policy_Head()
-    policy_head.init()
+    # policy_head = Policy_Head()
+    # policy_head.init()
 
     bc_trainer = BC_Trainer()
     bc_trainer.init()
@@ -52,17 +49,26 @@ def main():
     if cfg.config['agent']:
         a = Agent()
         a.init(cfg.agent)
+        return
     elif cfg.config['encoder'] and cfg.config['test']:
         encoder = CLIP_Encoder(config=cfg.config)
         encoder.init()
         encoder.run_open_clip()
         encoder.test_clip()
         encoder.test_zero_shot()
+        return
     elif cfg.config['environment'] and cfg.config['test']:
         env = ViZDoom_Env(config=cfg.config)
         env.init()
         env.run_default_scenario()
         env.test_basic_loop()
+        return
+    elif cfg.config['collect']:
+        collector = Collector(config=cfg.config)
+        collector.init()
+        collector.collect(episodes=cfg.config['episodes'])
+        collector.inspect()
+        return
 
     encoder = CLIP_Encoder(config=cfg.config)
     encoder.init()

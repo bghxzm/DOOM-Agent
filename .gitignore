@@ -231,3 +231,4 @@ CLAUDE.md
 
 # Cache
 cache/*
+*.pkl
