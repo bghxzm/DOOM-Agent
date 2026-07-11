@@ -184,6 +184,22 @@ class PPO_Trainer():
         Monitor wraps the env and appends one line per episode (reward,
         length, wall time) to a CSV in artifacts/ppo_logs/*
         This file is the "reward improves over training" evidence.
+
+        t_start: The Unix timestamp when monitoring begins.  All t values are
+                 measured relative to this time.
+        env_id: The Gym registry ID of the environment e.g. "CartPole-v1".
+                Ours will output "None" because we construct Doom_Gym_Env
+                directly instead of registering with gym.make().
+        r: total episode reward after _shape_reward scaling (raw ViZDoom reward
+           / 100).  An episode with a kill lands around +0.5 to +0.9 (+1.01
+           kill bonus - living/miss penalties).  A timeout without a kill lands
+           near -1 or below.
+        l: Episode length in env steps, i.e., decisions.  Each decision is
+           4 tics (frame_repeat), so the 300-tic timeout shows up as l=75.
+           Anything shorter means the episode ended early with a kill.
+        t: Cumulative wall-clock seconds since t_start at the moment the
+           episode ended.  Steady rise is attributed to elapsed time and
+           not step-specific.
         '''
         env = Monitor(
             Doom_Gym_Env(config=self.config, encoder=self.encoder,
