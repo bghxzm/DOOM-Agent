@@ -24,8 +24,6 @@ def init():
     """
     Initialize every package.
     """
-    relabeler = Relabeler()
-    relabeler.init()
 
     # policy_head = Policy_Head()
     # policy_head.init()
@@ -68,6 +66,12 @@ def main():
         collector.init()
         collector.collect(episodes=cfg.config['episodes'])
         collector.inspect()
+        return
+    elif cfg.config['relabel']:
+        relabeler = Relabeler(config=cfg.config)
+        relabeler.init()
+        relabeler.relabel()
+        relabeler.inspect()
         return
 
     encoder = CLIP_Encoder(config=cfg.config)

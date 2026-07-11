@@ -61,3 +61,9 @@ test_environment:
 
 collect_data:
 	@make main ARGS="--collect"
+
+collect_data_eps:
+	@make main ARGS="--collect --episodes=3"
+
+relabel_data:
+	@make main ARGS="--relabel"
