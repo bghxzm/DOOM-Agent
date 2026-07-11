@@ -73,3 +73,9 @@ bc_train:
 
 bc_train_epochs_5:
 	@make main ARGS="--bc --epochs=5"
+
+ppo_train:
+	@make main ARGS="--ppo"
+
+ppo_train_timesteps_2000:
+	@make main ARGS="--ppo --timesteps=2000"

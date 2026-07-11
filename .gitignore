@@ -229,7 +229,9 @@ CLAUDE.md
 # Excel
 *.xlsx
 
-# Cache
+# Output
 cache/*
 *.pkl
 *.pt
+*.csv
+*zip

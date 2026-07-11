@@ -66,8 +66,11 @@ def main():
         bc_trainer.train(epochs=cfg.config['epochs'])
         return
     elif cfg.config['ppo']:
-        ppo_trainer = PPO_Trainer()
+        encoder = CLIP_Encoder(config=cfg.config)
+        encoder.init()
+        ppo_trainer = PPO_Trainer(config=cfg.config, encoder=encoder)
         ppo_trainer.init()
+        ppo_trainer.train(total_timesteps=cfg.config['timesteps'])
         return
 
     encoder = CLIP_Encoder(config=cfg.config)
