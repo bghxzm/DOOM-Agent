@@ -103,14 +103,23 @@ class Temporal_Transformer(nn.Module):
         the last one (index-1) because it has attended all previous positions
         and accumulated the full context of the window.  This represents:
         "given everything I've seen, what is the current state?"
+
+        Accepts either a single window [N, 1027] (inference, returns
+        [hidden_dim]) or a batch of windows [B, N, 1027] (training,
+        returns [B, hidden_dim]).  The positional encoding [N, hidden_dim]
+        broadcasts across the batch dimension and the casual mask is the
+        same for every window in the batch.
         '''
-        # x [N, 1027] - one window from the buffer.
-        x = self.input_proj(x)                 # [N, hidden_dim]
-        x = x + self.pos_encoding[:x.size(0)]  # [N, hidden_dim]
-        x = x.unsqueeze(0)                     # [1, N, hidden_dim]
+        single = (x.dim() == 2)
+        if single:
+            x = x.unsqueeze(0)                # [1, N, 1027]
+
+        x = self.input_proj(x)                # [1, N, 1027]
+        x = x + self.pos_encoding[:x.size(1)]
 
         mask = nn.Transformer.generate_square_subsequent_mask(
             x.size(1), device=x.device
         )
-        out = self.transformer(x, mask=mask, is_causal=True) # [1, N, hidden_dim]
-        return out[0, -1, :] # [hidden_dim]
+        out = self.transformer(x, mask=mask, is_causal=True) # [B, N, hidden_dim]
+        out = out[:, -1, :] # [B, hidden_dim]
+        return out.squeeze(0) if single else out

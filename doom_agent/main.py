@@ -12,6 +12,7 @@ from agent.agent import Agent
 from data.relabeler import Relabeler
 from data.collector import Collector
 from encoder.clip_encoder import CLIP_Encoder
+from encoder.og_clip_encoder_test import OG_CLIP_Encoder_Test
 from environment.vizdoom_env import ViZDoom_Env
 from memory.buffer import Buffer
 from model.policy_head import Policy_Head
@@ -20,26 +21,10 @@ from training.bc_trainer import BC_Trainer
 from training.ppo_trainer import PPO_Trainer
 
 
-def init():
-    """
-    Initialize every package.
-    """
-
-    # policy_head = Policy_Head()
-    # policy_head.init()
-
-    bc_trainer = BC_Trainer()
-    bc_trainer.init()
-
-    ppo_trainer = PPO_Trainer()
-    ppo_trainer.init()
-
 def main():
     """
     Main application loop.
     """
-    init()
-
     cfg = Config()
     cfg.init()
     cfg.print_config()
@@ -49,7 +34,7 @@ def main():
         a.init(cfg.agent)
         return
     elif cfg.config['encoder'] and cfg.config['test']:
-        encoder = CLIP_Encoder(config=cfg.config)
+        encoder = OG_CLIP_Encoder_Test(config=cfg.config)
         encoder.init()
         encoder.run_open_clip()
         encoder.test_clip()
@@ -72,6 +57,17 @@ def main():
         relabeler.init()
         relabeler.relabel()
         relabeler.inspect()
+        return
+    elif cfg.config['bc']:
+        encoder = CLIP_Encoder(config=cfg.config)
+        encoder.init()
+        bc_trainer = BC_Trainer(config=cfg.config, encoder=encoder)
+        bc_trainer.init()
+        bc_trainer.train(epochs=cfg.config['epochs'])
+        return
+    elif cfg.config['ppo']:
+        ppo_trainer = PPO_Trainer()
+        ppo_trainer.init()
         return
 
     encoder = CLIP_Encoder(config=cfg.config)

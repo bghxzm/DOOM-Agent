@@ -48,7 +48,9 @@ class Config():
             "environment": False,
             "collect": False,
             "relabel": False,
+            "bc": False,
             "episodes": 20,
+            "epochs": 30,
             "test": False,
             "debug": False
         }
@@ -111,7 +113,9 @@ class Config():
             "  dir\n"
             "  --collect\n"
             "  --relabel\n"
+            "  --bc\n"
             "  --episodes=<num>\n"
+            "  --epochs=<num>\n"
             "  --debug\n"
         )
         if option is None:
@@ -182,7 +186,7 @@ class Config():
         """
         valid = ["agent", "encoder", "model", "device", "environment",
                  "test", "artifacts", "cache", "scenario", "collect",
-                 "relabel", "episodes", "debug"]
+                 "relabel", "bc", "episodes", "epochs", "debug"]
 
         parser = argparse.ArgumentParser("")
         for v in valid:
@@ -226,9 +230,15 @@ class Config():
             elif arg == "relabel":
                 if (getattr(args, arg) == None):
                     self.config['relabel'] = True
+            elif arg == "bc":
+                if (getattr(args, arg) == None):
+                    self.config['bc'] = True
             elif arg == "episodes":
                 if (getattr(args, arg) != ''):
                     self.config['episodes'] = int(getattr(args, arg))
+            elif arg == "epochs":
+                if (getattr(args, arg) != ''):
+                    self.config['epochs'] = int(getattr(args, arg))
             elif arg == "debug":
                 if (getattr(args, arg) == None):
                     self.config['debug'] = True

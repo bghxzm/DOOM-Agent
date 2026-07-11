@@ -166,7 +166,7 @@ class Relabeler():
         '''
         paths = sorted(self.trajectories_path.glob("*.pkl"))
         if not paths:
-            print(f"No trajectories found in {self.trajectories_path} -- "
+            print(f"No trajectories found in {self.trajectories_path} "
                   "run collection first (make collect_data).")
             return
 

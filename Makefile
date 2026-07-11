@@ -62,8 +62,14 @@ test_environment:
 collect_data:
 	@make main ARGS="--collect"
 
-collect_data_eps:
+collect_data_episodes_3:
 	@make main ARGS="--collect --episodes=3"
 
 relabel_data:
 	@make main ARGS="--relabel"
+
+bc_train:
+	@make main ARGS="--bc"
+
+bc_train_epochs_5:
+	@make main ARGS="--bc --epochs=5"
