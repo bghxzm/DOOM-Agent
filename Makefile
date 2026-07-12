@@ -45,14 +45,8 @@ setup: ${VENV}
 
 
 #
-# Target agent options.
+# Target options.
 #
-train_agent:
-	@make main ARGS="--agent=t"
-
-agent:
-	@make main ARGS="--agent"
-
 test_encoder:
 	@make main ARGS="--encoder --test"
 
@@ -79,3 +73,12 @@ ppo_train:
 
 ppo_train_timesteps_2000:
 	@make main ARGS="--ppo --timesteps=2000"
+
+eval_agent:
+	@make main ARGS="--eval --policy=ppo --episodes=50"
+
+eval_bc:
+	@make main ARGS="--eval --policy=bc --episodes=50"
+
+export_unity:
+	@make main ARGS="--export"

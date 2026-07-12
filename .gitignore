@@ -235,3 +235,4 @@ cache/*
 *.pt
 *.csv
 *zip
+*.json

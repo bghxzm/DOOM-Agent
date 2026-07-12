@@ -37,7 +37,6 @@ class Config():
     def __init__(self):
         self.project_root = Path(__file__).resolve().parent.parent
         self.config = {
-            "agent": None,
             "model": None,
             "device": None,
             "pretrained": None,
@@ -50,6 +49,9 @@ class Config():
             "relabel": False,
             "bc": False,
             "ppo": False,
+            "eval": False,
+            "export": False,
+            "policy": "ppo",
             "episodes": 20,
             "epochs": 30,
             "timesteps": 20000,
@@ -88,9 +90,6 @@ class Config():
         """
         help_msg=(
             "Usage:\n"
-            "  --agent=<options>\n"
-            "\n"
-            "  t    training\n"
             "  --encoder\n"
             "  --model=<options>\n"
             "\n"
@@ -117,6 +116,9 @@ class Config():
             "  --relabel\n"
             "  --bc\n"
             "  --ppo\n"
+            "  --eval\n"
+            "  --export\n"
+            "  --policy=<bc|ppo>\n"
             "  --episodes=<num>\n"
             "  --epochs=<num>\n"
             "  --timesteps=<num>\n"
@@ -188,10 +190,10 @@ class Config():
         """
         Parse through the arguments input at runtime.
         """
-        valid = ["agent", "encoder", "model", "device", "environment",
-                 "test", "artifacts", "cache", "scenario", "collect",
-                 "relabel", "bc", "ppo", "episodes", "epochs", "timesteps",
-                 "debug"]
+        valid = ["encoder", "model", "device", "environment", "test",
+                 "artifacts", "cache", "scenario", "collect", "relabel",
+                 "bc", "ppo", "eval", "export", "policy", "episodes",
+                 "epochs", "timesteps", "debug"]
 
         parser = argparse.ArgumentParser("")
         for v in valid:
@@ -199,15 +201,7 @@ class Config():
         args = parser.parse_args()
 
         for arg in vars(args):
-            if arg == "agent":
-                if (getattr(args, arg) == None):
-                    self.config['agent'] = "default"
-                elif set(getattr(args, arg)).issubset(set('t')):
-                    if 't' in args.agent:
-                        self.config['agent'] = "train"
-                else:
-                    self.print_help(args)
-            elif arg == "encoder":
+            if arg == "encoder":
                 if (getattr(args, arg) == None):
                     self.config['encoder'] = True
             elif arg == "model":
@@ -241,6 +235,15 @@ class Config():
             elif arg == "ppo":
                 if (getattr(args, arg) == None):
                     self.config['ppo'] = True
+            elif arg == "eval":
+                if (getattr(args, arg) == None):
+                    self.config['eval'] = True
+            elif arg == "export":
+                if (getattr(args, arg) == None):
+                    self.config['export'] = True
+            elif arg == "policy":
+                if (getattr(args, arg) != ''):
+                    self.config['policy'] = getattr(args, arg)
             elif arg == "episodes":
                 if (getattr(args, arg) != ''):
                     self.config['episodes'] = int(getattr(args, arg))

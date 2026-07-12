@@ -29,9 +29,17 @@ def main():
     cfg.init()
     cfg.print_config()
 
-    if cfg.config['agent']:
-        a = Agent()
-        a.init(cfg.agent)
+    if cfg.config['eval']:
+        encoder = CLIP_Encoder(config=cfg.config)
+        encoder.init()
+        agent = Agent(config=cfg.config, encoder=encoder)
+        agent.init()
+        agent.load_checkpoint(cfg.config['policy'])
+        agent.evaluate(episodes=cfg.config['episodes'])
+        return
+    elif cfg.config['export']:
+        agent = Agent(config=cfg.config)
+        agent.export_for_unity()
         return
     elif cfg.config['encoder'] and cfg.config['test']:
         encoder = OG_CLIP_Encoder_Test(config=cfg.config)
