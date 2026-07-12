@@ -60,9 +60,9 @@ class Config():
         }
 
     def init(self):
-        """
+        '''
         Initial configuration.
-        """
+        '''
         self.args()
         if not self.config['device']:
             self.choose_device()
@@ -76,18 +76,18 @@ class Config():
             self.choose_scenario_path()
 
     def print_config(self):
-        """
+        '''
         Print config settings.
-        """
+        '''
         print(f"\nCONFIG:")
         for key, value in self.config.items():
             print(f"{key}: {value}")
         print(f"\n")
 
     def print_help(self, option):
-        """
+        '''
         Invalid config help
-        """
+        '''
         help_msg=(
             "Usage:\n"
             "  --encoder\n"
@@ -133,9 +133,9 @@ class Config():
         sys.exit()
 
     def choose_model(self, model_name="ViT-B-32"):
-        """
+        '''
         Configure which model to use.
-        """
+        '''
         if model_name not in MODELS:
             self.config['model'] = "ViT-B-32"
             self.config['pretrained'] = MODELS[self.config['model']]
@@ -144,9 +144,9 @@ class Config():
             self.config['pretrained'] = MODELS[model_name]
 
     def choose_device(self, device_name=""):
-        """
+        '''
         Configure which torch device to use.
-        """
+        '''
         if device_name not in DEVICES:
             self.config['device'] = (
                 "mps" if torch.backends.mps.is_available() else
@@ -157,9 +157,9 @@ class Config():
             self.config['device'] = device_name
 
     def choose_artifacts_path(self, artifacts_path="artifacts"):
-        """
+        '''
         Configure which artifacts path to use.
-        """
+        '''
         path = self.project_root / artifacts_path
         if path.is_dir():
             self.config['artifacts_path'] = path
@@ -167,9 +167,9 @@ class Config():
             self.config['artifacts_path'] = self.project_root / "artifacts"
 
     def choose_cache_path(self, cache_path="cache"):
-        """
+        '''
         Configure which cache path to use.
-        """
+        '''
         path = self.project_root / cache_path
         if path.is_dir():
             self.config['cache_path'] = path
@@ -177,9 +177,9 @@ class Config():
             self.config['cache_path'] = self.project_root / "cache"
 
     def choose_scenario_path(self, scenario_path="scenarios"):
-        """
+        '''
         Configure which scenario path to use.
-        """
+        '''
         path = self.project_root / scenario_path
         if path.is_dir():
             self.config['scenario_path'] = path
@@ -187,9 +187,9 @@ class Config():
             self.config['scenario_path'] = self.project_root / "scenarios"
 
     def args(self):
-        """
+        '''
         Parse through the arguments input at runtime.
-        """
+        '''
         valid = ["encoder", "model", "device", "environment", "test",
                  "artifacts", "cache", "scenario", "collect", "relabel",
                  "bc", "ppo", "eval", "export", "policy", "episodes",
