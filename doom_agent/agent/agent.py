@@ -16,7 +16,6 @@ import pandas as pd
 import torch
 import vizdoom as vzd
 
-from data.relabeler import KILL_REWARD_THRESHOLD
 from environment.game import Game
 from memory.buffer import Buffer
 from model.policy_head import Policy_Head
@@ -142,7 +141,7 @@ class Agent():
                     reward = self.g.game.make_action(
                         self.g.actions[action_idx], frame_repeat)
                     decisions += 1
-                    if reward > KILL_REWARD_THRESHOLD:
+                    if reward > self.config['KILL_REWARD_THRESHOLD']:
                         success, to_kill = True, decisions
 
             total = self.g.game.get_total_reward()

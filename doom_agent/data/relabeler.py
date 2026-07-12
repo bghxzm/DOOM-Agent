@@ -13,20 +13,6 @@ from pathlib import Path
 import pickle
 
 
-# Button positions in actions_table entries.  Order matches available_buttons
-# in scenarios/basic.cfg: [MOVE_LEFT, MOVE_RIGHT, ATTACK].
-MOVE_LEFT, MOVE_RIGHT, ATTACK = 0, 1, 2
-
-# basic.wad pays +101 for the kill, -1/tic living, -5 per missed shot.
-# With frame_repeat=4 a kill step nets ~+97 and the worst possible non-kill
-# step nets ~-9 so anything above this threshold is a kill.
-KILL_REWARD_THRESHOLD = 50.0
-
-# Movement runs shorter than this many decisions (4 tics each) are jitter
-# from the sticky random policy, not purposeful movement.
-MIN_RUN_LENGTH = 3
-
-
 class Relabeler():
     """
     Hindsight instruction relabeling.
@@ -39,11 +25,17 @@ class Relabeler():
     demonstration of "move to the left".
     """
     def __init__(self, config=None):
-        self.config = config
-        self.artifacts_path = self.config['artifacts_path']
+        self.cfg = config
+        self.artifacts_path = self.cfg['artifacts_path']
         self.trajectories_path = Path(self.artifacts_path) / "trajectories"
         self.relabled_path = Path(self.artifacts_path) / "relabeled"
         self.stats = Counter()
+
+        self.MOVE_LEFT = self.cfg["MOVE_LEFT"]
+        self.MOVE_RIGHT = self.cfg["MOVE_RIGHT"]
+        self.ATTACK = self.cfg["ATTACK"]
+        self.KILL_REWARD_THRESHOLD = self.cfg["KILL_REWARD_THRESHOLD"]
+        self.MIN_RUN_LENGTH = self.cfg["MIN_RUN_LENGTH"]
 
     def init(self):
         self.relabled_path.mkdir(parents=True, exist_ok=True)
@@ -80,7 +72,7 @@ class Relabeler():
         of how the kill was achieved.
         '''
         for i, step in enumerate(steps):
-            if step["reward"] > KILL_REWARD_THRESHOLD:
+            if step["reward"] > self.KILL_REWARD_THRESHOLD:
                 return [self._make_segment(steps, 0, i+1, "kill the monster")]
 
         return []
@@ -93,9 +85,9 @@ class Relabeler():
         '''
         def direction(step):
             b = self._buttons(step, actions_table)
-            if b[MOVE_LEFT] and not b[MOVE_RIGHT]:
+            if b[self.MOVE_LEFT] and not b[self.MOVE_RIGHT]:
                 return "move to the left"
-            if b[MOVE_RIGHT] and not b[MOVE_LEFT]:
+            if b[self.MOVE_RIGHT] and not b[self.MOVE_LEFT]:
                 return "move to the right"
             return None
 
@@ -107,7 +99,7 @@ class Relabeler():
             label = direction(step) if step is not None else None
             if label == run_label:
                 continue
-            if run_label is not None and i - run_start >= MIN_RUN_LENGTH:
+            if run_label is not None and i - run_start >= self.MIN_RUN_LENGTH:
                 segments.append(
                     self._make_segment(steps, run_start, i, run_label))
             run_label, run_start = label, i
@@ -122,7 +114,7 @@ class Relabeler():
         run_start = None
         for i, step in enumerate(steps + [None]):
             firing = (step is not None
-                      and self._buttons(step,actions_table)[ATTACK])
+                      and self._buttons(step,actions_table)[self.ATTACK])
             if firing and run_start is None:
                 run_start = i
             elif not firing and run_start is not None:
@@ -203,4 +195,3 @@ class Relabeler():
                 f"{s['instruction']}[{len(s['steps'])}]"
                 for s in r["segments"])
             print(f"{path.name}: {summary}")
-

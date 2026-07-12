@@ -86,7 +86,7 @@ make ppo_train      # 4. Proximal Policy Optimization
 make eval_agent     # 5. PPO Policy
 make eval_bc        # 6. Behavior Cloning
 make export_unity   # 7. Export checkpoints + manifest.json for unity.
-make clean          # Clean all generated artifacts/files and venv
+make clean_all      # Clean all generated artifacts/files and venv
 make                # Run steps 1-7 in order with default values.
 ```
 

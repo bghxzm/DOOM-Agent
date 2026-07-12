@@ -5,7 +5,7 @@ EN.605.740.81.SU26
 Dr. Alhassan S. Yasin
 
 Original implementation of the OpenCLIP encoder from last semester.
-og_clip_encoder_test.py
+clip_encoder_test.py
 """
 
 import numpy as np
@@ -21,15 +21,15 @@ from torchvision.datasets import (CIFAR10, CIFAR100)
 from datetime import datetime
 
 
-class OG_CLIP_Encoder_Test():
+class CLIP_Encoder_Test():
     """
-    OpenCLIP encoder
+    Original implementation of OpenCLIP encoder for testing.
     """
     def __init__(self, config=None, dataset="cifar10"):
         self.config = config
         self.model_name = self.config['model']
         self.pretrained = self.config['pretrained']
-        self.cache_path = self.config['cache_path']
+        self.embeddings_path = self.config['embeddings_path']
         self.dataset_name = dataset
         self.model = None
         self.preprocess = None
@@ -65,11 +65,11 @@ class OG_CLIP_Encoder_Test():
         self.tokenizer = open_clip.get_tokenizer(self.model_name)
 
     def load_cifar10(self):
-        """
+        '''
         Cifar-10: 10 classes, 10,000 test images.
-        """
+        '''
         dataset = CIFAR10(
-            root=self.cache_path,
+            root=self.embeddings_path,
             train=False,
             download=True,
             transform=self.preprocess
@@ -79,9 +79,9 @@ class OG_CLIP_Encoder_Test():
         return dataset, class_names, template
 
     def get_dataset(self, name):
-        """
+        '''
         Load dataset by name.
-        """
+        '''
         loaders = {
             "cifar10": self.load_cifar10
         }
@@ -91,9 +91,9 @@ class OG_CLIP_Encoder_Test():
         return loaders[name]()
 
     def encode_text_prompts(self, class_names, template):
-        """
+        '''
         Encode all class names into text embeddings.
-        """
+        '''
         prompts = [template.format(name) for name in class_names]
         text_tokens = self.tokenizer(prompts)
 
@@ -104,9 +104,9 @@ class OG_CLIP_Encoder_Test():
         return text_features
 
     def evaluate_dataset(self, batch_size=64):
-        """
+        '''
         Evaluate CLIP zero-shot accuracy on a dataset.
-        """
+        '''
         # Load dataset
         dataset_images, class_names, template = self.get_dataset(self.dataset_name)
         print(f"\n\tDataset: {self.dataset_name}")
@@ -185,9 +185,9 @@ class OG_CLIP_Encoder_Test():
         self.dataset_info["template"] = template
 
     def evaluate_model(self):
-        """
+        '''
         Evaluate a single CLIP model on multiple datasets.
-        """
+        '''
         # Print model info
         num_params = sum(p.numel() for p in self.model.parameters())
         print(f"Params: {num_params:,}")
@@ -205,9 +205,9 @@ class OG_CLIP_Encoder_Test():
             self.dataset_results["datasets"][self.dataset_name] = {"error": str(e)}
 
     def print_summary_table(self, all_results):
-        """
+        '''
         Print a summary table of results.
-        """
+        '''
         print("\n" + "="*80)
         print("SUMMARY: Zero-Shot Accuracy (%)")
         print("="*80)
@@ -233,9 +233,9 @@ class OG_CLIP_Encoder_Test():
         print("="*80)
 
     def run_open_clip(self):
-        """
+        '''
         Run the full evaluation.
-        """
+        '''
         print(f"CLIP Zero-Shot Evaluation")
         print(f"Date: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
         print(f"Datasets: {self.dataset_name}")

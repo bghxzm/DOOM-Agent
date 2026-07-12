@@ -4,7 +4,7 @@ Machine Learning: Deep Learning
 EN.605.740.81.SU26
 Dr. Alhassan S. Yasin
 
-OpenCLIP encoder
+Frozen OpenCLIP encoder
 clip_encoder.py
 """
 

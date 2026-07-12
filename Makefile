@@ -25,14 +25,16 @@ main: ${VENV}
 	@${RUN_CMD} ${DOOM_DIR}/$@.py ${ARGS}
 
 
-#
-# Clean repo to the default state.
-#
-clean:
+clean_venv:
 	@rm -rf venv
+
+clean:
 	@rm -f _vizdoom.ini
 	@find ${ARTIFACTS} -mindepth 1 ! -name ".keepme" -delete
 
+clean_all:
+	@make clean_venv
+	@make clean
 
 #
 # Create the python virtual environment.
