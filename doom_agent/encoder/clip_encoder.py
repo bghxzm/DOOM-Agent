@@ -27,7 +27,6 @@ class CLIP_Encoder():
         self.tokenizer = None
 
     def init(self):
-        print("CLIP Encoder!")
         print("\n" + "="*60)
         print(f"Model: {self.model_name} ({self.pretrained})")
         print("="*60)

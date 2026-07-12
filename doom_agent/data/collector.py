@@ -38,7 +38,6 @@ class Collector():
         rendering.  Resolution is dropped to 320x240 because CLIP preprocessing
         resizes/center-crops to 224x224.
         '''
-        print("Collector!")
         self.g.init(resolution=vzd.ScreenResolution.RES_320X240,
                     visible=False)
         self.trajectories_path.mkdir(parents=True, exist_ok=True)

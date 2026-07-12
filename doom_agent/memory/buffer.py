@@ -22,7 +22,6 @@ class Buffer():
         self.buffer = None
 
     def init(self):
-        print("Buffer!")
         self.buffer = deque(maxlen=self.window_size)
 
     def reset(self):

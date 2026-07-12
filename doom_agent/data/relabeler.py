@@ -46,7 +46,6 @@ class Relabeler():
         self.stats = Counter()
 
     def init(self):
-        print("Relabeler!")
         self.relabled_path.mkdir(parents=True, exist_ok=True)
 
     def _buttons(self, step, actions_table):

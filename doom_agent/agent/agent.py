@@ -49,7 +49,6 @@ class Agent():
         Game and models are built here rather than __init__ so that the
         export path can use an Agent without paying any startup cost.
         '''
-        print("Agent!")
         self.g = Game(path=self.config['scenario_path'])
         self.g.init(resolution=vzd.ScreenResolution.RES_320X240, visible=False)
         self.buffer = Buffer()

@@ -24,7 +24,7 @@ class Policy_Head(nn.Module):
         self.linear = nn.Linear(hidden_dim, num_actions)
 
     def init(self):
-        print("Policy Head!")
+        pass
 
     def forward(self, hidden_state):
         '''

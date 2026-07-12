@@ -150,7 +150,6 @@ class PPO_Trainer():
         self.model = None
 
     def init(self):
-        print("Proximal Policy Optimization Trainer!")
         self.logs_path.mkdir(parents=True, exist_ok=True)
         self.checkpoints_path.mkdir(parents=True, exist_ok=True)
 

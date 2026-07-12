@@ -33,9 +33,6 @@ class ViZDoom_Env():
         self.policy_head = None
 
     def init(self):
-        print("ViZDoom Env!")
-        # self.eps = Episode()
-        # self.g = Game(path=self.scenario_path)
         self.g.init()
         self.policy_head = Policy_Head(hidden_dim=256,
                                        num_actions=len(self.g.actions))

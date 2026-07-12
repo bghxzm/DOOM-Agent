@@ -79,7 +79,7 @@ class Temporal_Transformer(nn.Module):
         return pe # [max_len, hidden_dim]
 
     def init(self):
-        print("Temporal Transformer!")
+        pass
 
     def forward(self, x):
         '''

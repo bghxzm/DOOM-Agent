@@ -46,7 +46,6 @@ class BC_Trainer():
         self.instructions = []
 
     def init(self):
-        print("Behavior Cloning Trainer!")
         self.embeddings_path.mkdir(parents=True, exist_ok=True)
         self.checkpoints_path.mkdir(parents=True, exist_ok=True)
 

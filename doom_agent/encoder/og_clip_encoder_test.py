@@ -53,7 +53,6 @@ class OG_CLIP_Encoder_Test():
         }
 
     def init(self):
-        print("CLIP Encoder!")
         print("\n" + "="*60)
         print(f"Model: {self.model_name} ({self.pretrained})")
         print("="*60)
