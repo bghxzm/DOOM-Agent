@@ -7,6 +7,7 @@ VBIN=		${VENV}/bin
 PIP=		${VBIN}/pip3
 
 DOOM_DIR=	${THIS_DIR}/doom_agent
+ARTIFACTS=	${THIS_DIR}/artifacts
 TOOLS_DIR=	${DOOM_DIR}/tools
 AGENT_DIR=	${DOOM_DIR}/agent
 RUN_CMD=	${VBIN}/python3
@@ -28,7 +29,9 @@ main: ${VENV}
 # Clean repo to the default state.
 #
 clean:
-	rm -rf venv
+	@rm -rf venv
+	@rm -f _vizdoom.ini
+	@find ${ARTIFACTS} -mindepth 1 ! -name ".keepme" -delete
 
 
 #
@@ -73,6 +76,9 @@ ppo_train:
 
 ppo_train_timesteps_2000:
 	@make main ARGS="--ppo --timesteps=2000"
+
+ppo_train_timesteps_100000:
+	@make main ARGS="--ppo --timesteps=100000"
 
 eval_agent:
 	@make main ARGS="--eval --policy=ppo --episodes=50"

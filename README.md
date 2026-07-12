@@ -12,9 +12,9 @@ The agent interprets a long-horizon plan by decomposing it into natural-language
 1. Generalization to unseen maps
 2. Performance — how reliably and efficiently the agent completes each sub-goal
 
-Primary environment: **ViZDoom**.
-Secondary environment: **Unity** (via DoomLoader).
-Architecture inspired by **SIMA 2** (Google DeepMind).
+Primary environment: **ViZDoom**
+Secondary environment: **Unity** (via DoomLoader)
+Architecture inspired by **SIMA 2** (Google DeepMind)
 
 ---
 
@@ -23,14 +23,23 @@ Architecture inspired by **SIMA 2** (Google DeepMind).
 ```
 DOOM-Agent/
 ├── doom_agent/
+│   ├── artifacts/                # All generated data
+│   │   ├── trajectories/         # 1. Raw demo episodes (.pkl)
+│   │   ├── relabeled/            # 2. Instruction-labeled segments (.pkl)
+│   │   ├── embeddings/           # 3. Cached CLIP encodings (.pt)
+│   │   ├── checkpoints/          # 3-4. bc_policy.pt / ppo_policy.zip
+│   │   ├── ppo_logs/             # 4. Per-episode reward CSV
+│   │   └── export/               # 7. Unity bundle
 │   ├── agent/
 │   │   ├── __init__.py
 │   │   └── agent.py              # Agent class — coordinate run loop
 │   ├── encoder/
 │   │   ├── __init__.py
-│   │   └── clip_encoder.py       # FROM CV PROJECT — copy-paste reuse (see below)
+│   │   └── clip_encoder.py       # Handles frozen encoder operations.
 │   ├── environment/
 │   │   ├── __init__.py
+│   │   ├── episode.py            # Handles all episodes operations.
+│   │   ├── game.py               # Handles all game operations.
 │   │   └── vizdoom_env.py        # ViZDoom wrapper + HUD collection
 │   ├── memory/
 │   │   ├── __init__.py
@@ -47,11 +56,8 @@ DOOM-Agent/
 │   │   ├── __init__.py
 │   │   ├── bc_trainer.py         # Behavior cloning training loop
 │   │   └── ppo_trainer.py        # PPO via Stable Baselines3
-│   ├── tools/
-│   │   ├── __init__.py
-│   │   └── config.py             # CLI arg parsing
+│   ├── config.py                 # CLI arg parsing
 │   └── main.py                   # Entry point
-├── artifacts/                    # Checkpoints, logs, tensorboard — gitignored
 ├── scenarios/                    # ViZDoom .cfg and .wad files
 ├── Makefile
 ├── reqs.txt                      # pip dependencies — add all new packages here
@@ -62,30 +68,113 @@ DOOM-Agent/
 
 ## Running
 
+```
+collect -> relabel -> bc_train -> ppo_train -> eval / export
+
+Note: Re-running earlier stages invalidates everything downstream.
+      After re-collection, you must re-relabel and re-train both
+      training stages.  (Embedding caches invalidate themselves via
+      timestamps; checkpoints do not know the data is stale).
+```
+
 ```bash
 make setup          # Create venv and install reqs.txt (python3.11)
-make agent          # Run default agent  (--agent=a)
-make debug_agent    # Run with debug     (--agent=dt)
-make train_agent    # Run training       (--agent=t)
-make clean          # Remove venv
+make collect_data   # 1. Collect demo trajectories
+make relabel_data   # 2. Hindsight relabeling
+make bc_train       # 3. Behavior Cloning
+make ppo_train      # 4. Proximal Policy Optimization
+make eval_agent     # 5. PPO Policy
+make eval_bc        # 6. Behavior Cloning
+make export_unity   # 7. Export checkpoints + manifest.json for unity.
+make clean          # Clean all generated artifacts/files and venv
+make                # Run steps 1-7 in order with default values.
 ```
 
-Custom ARGS passthrough:
-```bash
-make main ARGS="--agent=dt"
-```
+### 1. Collect demo trajectories - `make collect_data`
 
----
+Runs 20 episodes of a scripted policy (random actions with a 0.7 "sticky"
+repeat probability) headless at 320x240 and records every decision step:
+frame, HUD values, action index, reward.
 
-## CLI Flags (`--agent=<letters>`)
+- **Output:** `artifacts/trajectories/*.pkl` - one file per episode
+- **Duration:** ~2-5 minutes
+- **Check:** The inspection printout lists ~20 files with sane step counts
+             and a healthy mix of kill and timeout episodes (roughly half
+             or more kills is typical).
 
-| Flag | Effect |
-|------|--------|
-| `a`  | Default agent run |
-| `d`  | Enable debug output |
-| `t`  | Enable training mode |
+### 2. Hindsight Relabeling - `make relabel_data`
 
-Flags are combinable: `--agent=dt` = debug + training. Parsed in `doom_agent/tools/config.py`.
+Scans each trajectory for achieved outcomes (kill detected from the reward
+signal, movement and firing runs) and retroactively assigns the natural-language
+instruction each segment demonstrates.  The scripted policy never intends to do
+anything but whatever it actually does is a valid demonstration of *some* instruction.
+
+- **Output:** `artifacts/relabeled/*.pkl` - instruction-labeled segments
+- **Duration:** seconds
+- **Check:** The instruction distribution table shows all four instructions
+             ("kill the monster", "move to the left", "move to the right",
+             "fire the weapon") with no single instruction above ~50% of
+             labeled steps.  If the distribution is badly skewed, re-collect
+             rather than train.
+
+Instruction distribution table shows all four instructions with no single
+step above ~50% of steps.
+
+### 3. Behavior Cloning - `make bc_train`
+
+Supervised warm start: Given a sliding window of 8 timesteps and an instruction
+predict the demonstrator's action (cross-entropy).  The first run encodes all
+frames through frozen CLIP once and caches the embeddings (`artifacts/embeddings/`)
+later runs skip straight to training.
+
+- **Output:** `artifacts/checkpoints/bc_policy.pt` (best validation epoch, not last)
+- **Duration:** ~2-3 minutes on the first run (CLIP encoding) fast after.
+- **Check:** The `Dataset:` line reports roughly 1000 train / 100 validation windows
+             and best validation accuracy is well above 0.125 random baseline.
+             Low accuracy on "kill the monster" specifically is expected - random-play
+             demonstrations contain no purposeful killing behavior to imitate.
+
+### 4. Proximal Policy Optimization - `make ppo_train`
+
+Loads the BC weights into a Stable Baselines3 PPO policy (the temporal transformer
+as feature extractor, the policy head as action net) and fine-tunes for 20000 timesteps
+against the real reward: dense living / missed-shot penalties + the sparse kill bonus.
+This is where the policy becomes goal=directed rather than imitative.
+
+- **Output:** `artifacts/checkpoints/ppo_policy.zip` + per-episode rewards in `artifacts/ppo_logs/ppo.monitor.csv`
+- **Duration:** ~15 minutes locally (every env step runs CLIP on CPU)
+- **Check:** The startup log prints `Loading BC checkpoint (...)`.  If no checkpoint
+             was found stage 3 did not save where PPO looks.  Over training
+             `rollout/ep_rew_mean` should trend upward and episodes should shorten.
+             20k timesteps is a local demo budget; report-quality runs should use
+             100k+ (`make main ARGS="--ppo --timesteps=1000000"`), ideally on CUDA.
+
+### 5. PPO Policy - `make eval_agent`
+### 6. Behavior Cloning - `make eval_bc`
+
+Both run on full trained agent (frozen CLIP -> window buffer -> temporal transformer -> policy head)
+greedily for 50 episodes on the training map and record the two baseline metrics:
+
+- **Sub-goal completion rate:** Episodes where the sub-goal was achieved / total episodes.
+- **Episode efficiency:** Mean decisions to completion, successful episodes only.
+- **Output:** `artifacts/eval_ppo_basic.xlsx` and `artifacts/eval_bc_basic.xlsx`
+- **Duration:** A few minutes each.
+- **What it's for:** Together these produce the "ViZDoom (training map)" column
+                     of the three-way comparison table (ViZDoom baseline v Unity
+                     no-retrain v Unity retrained), + the BC-v-PPO comparison showing
+                     what reinforcement learning added on top of imitation.  Expect
+                     PPO to clearly beat BC on completion rate.
+
+### 7. Export checkpoints + manifest.json for unity - `make export_unity`
+
+Copies both checkpoints and writes `manifest.json`: the full observation pipeline
+contract (CLIP model tag, embedding dims and concat order, HUD normalization,
+window size, action table, frame repeat, metric definitions).  The Unity side
+must match the manifest field-for-field.  Any silent mismatch would masquerade as
+generalization failure.
+
+- **Output:** `artifacts/export/` - This directory is handed to Unity.
+- **Duration:** Instant
 
 ---
 
