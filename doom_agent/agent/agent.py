@@ -209,7 +209,7 @@ class Agent():
                 "pretrained": self.config['pretrained'],
                 "frame_embedding_dim": 512,
                 "goal_embedding_dim": 512,
-                "12_normalized": True,
+                "l2_normalized": True,
             },
             "observation": {
                 "timestep_dim": 1027,
@@ -223,7 +223,7 @@ class Agent():
                 "hidden_dim": 256, "nhead": 4, "num_layers": 2,
                 "dim_feedforward": 512,
                 "position_encoding": "sinusoidal",
-                "masking": "casual",
+                "masking": "causal",
                 "output": "final position hidden state",
             },
             "actions": {
@@ -239,10 +239,10 @@ class Agent():
             },
             "metrics": {
                 "completion_rate":
-                    "succesful episodes / total episodes",
+                    "successful episodes / total episodes",
                 "episode_efficiency":
                     "mean decisions to sub-goal completion, "
-                    "succesful episodes only",
+                    "successful episodes only",
             },
         }
         with open(self.export_path / "manifest.json", "w") as f:

@@ -4,7 +4,7 @@ Machine Learning: Deep Learning
 EN.605.740.81.SU26
 Dr. Alhassan S. Yasin
 
-Transformer Encoder with casual masking.
+Transformer Encoder with causal masking.
 temporal_transformer.py
 """
 
@@ -15,7 +15,7 @@ import torch.nn as nn
 
 class Temporal_Transformer(nn.Module):
     """
-    Transformer Encoder with casual masking.
+    Transformer Encoder with causal masking.
     """
     def __init__(self, input_dim=1027, hidden_dim=256, nhead=4,
                  num_layers=2, dim_feedforward=512, dropout=0.1, window_size=8):
@@ -86,7 +86,7 @@ class Temporal_Transformer(nn.Module):
         During training that would let the model cheat by looking ahead.  At
         inference time the future does not exist so it would fail.
 
-        A casual mask sets future positions to -inf before the softmax which
+        A causal mask sets future positions to -inf before the softmax which
         makes them contribute 0 to attention.  This creates a lower-triangular
         attention matrix:
 
@@ -104,7 +104,7 @@ class Temporal_Transformer(nn.Module):
         Accepts either a single window [N, 1027] (inference, returns
         [hidden_dim]) or a batch of windows [B, N, 1027] (training,
         returns [B, hidden_dim]).  The positional encoding [N, hidden_dim]
-        broadcasts across the batch dimension and the casual mask is the
+        broadcasts across the batch dimension and the causal mask is the
         same for every window in the batch.
         '''
         single = (x.dim() == 2)

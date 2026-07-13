@@ -12,11 +12,8 @@ from agent.agent import Agent
 from data.relabeler import Relabeler
 from data.collector import Collector
 from encoder.clip_encoder import CLIP_Encoder
-from environment.vizdoom_env import ViZDoom_Env
 from training.bc_trainer import BC_Trainer
 from training.ppo_trainer import PPO_Trainer
-from test.clip_encoder_test import CLIP_Encoder_Test
-from test.vizdoom_env_test import ViZDoom_Env_Test
 
 
 def main():
@@ -28,16 +25,13 @@ def main():
     cfg.print_config()
 
     if cfg.config['encoder'] and cfg.config['test']:
+        from test.clip_encoder_test import CLIP_Encoder_Test
+
         encoder = CLIP_Encoder_Test(config=cfg.config)
         encoder.init()
         encoder.run_open_clip()
         encoder.test_clip()
         encoder.test_zero_shot()
-        return
-    elif cfg.config['environment'] and cfg.config['test']:
-        env = ViZDoom_Env_Test(config=cfg.config)
-        env.init()
-        env.test_basic_loop()
         return
     elif cfg.config['eval']:
         encoder = CLIP_Encoder(config=cfg.config)

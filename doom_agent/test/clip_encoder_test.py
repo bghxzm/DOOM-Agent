@@ -29,7 +29,7 @@ class CLIP_Encoder_Test():
         self.config = config
         self.model_name = self.config['model']
         self.pretrained = self.config['pretrained']
-        self.embeddings_path = self.config['embeddings_path']
+        self.embeddings_path = self.config['paths']['embeddings_path']
         self.dataset_name = dataset
         self.model = None
         self.preprocess = None

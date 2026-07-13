@@ -36,6 +36,7 @@ class CLIP_Encoder():
             self.model_name, pretrained=self.pretrained
         )
         self.model.eval()
+        self.model.to(self.config['device'])
         self.tokenizer = open_clip.get_tokenizer(self.model_name)
 
     def encode_frame(self, frame_array):
@@ -73,6 +74,7 @@ class CLIP_Encoder():
 
         # Step 3
         pixel_values = self.preprocess(pil_image).unsqueeze(0)
+        pixel_values = pixel_values.to(self.config['device'])
 
         # Step 4
         with torch.no_grad():
@@ -80,15 +82,16 @@ class CLIP_Encoder():
             frame_emb = frame_emb / frame_emb.norm(dim=-1, keepdim=True) # L2 Normalize
 
         # Step 5
-        return frame_emb.squeeze(0)
+        return frame_emb.squeeze(0).cpu()
 
     def encode_subgoal(self, text):
         # CLIP's tokenizer expects a list of strings.  It converts words
         # into integer token IDs that the next transformer understands.
         tokens = self.tokenizer([text])
+        tokens = tokens.to(self.config['device'])
 
         with torch.no_grad():
             goal_emb = self.model.encode_text(tokens) # [1, 512]
             goal_emb = goal_emb / goal_emb.norm(dim=-1, keepdim=True)
 
-        return goal_emb.squeeze(0) # [512]
+        return goal_emb.squeeze(0).cpu() # [512]

@@ -80,10 +80,8 @@ class Default_Config():
         '''
         Check if the path exists.  If it does not, then create one.
         '''
-        if path_to_assign.is_dir():
-            self.cfg['paths'][path_idx] = path_to_assign
-        else:
-            self.cfg['paths'][path_idx].mkdir(parents=True, exist_ok=True)
+        path_to_assign.mkdir(parents=True, exist_ok=True)
+        self.cfg['paths'][path_idx] = path_to_assign
 
     def choose_artifacts_path(self, artifacts_path="artifacts"):
         '''
@@ -154,7 +152,7 @@ class Default_Config():
         '''
         ppo_checkpoint_zip = ppo_checkpoint_path + ".zip"
         self.cfg['paths']['ppo_checkpoint_path'] = self.cfg['paths']['checkpoints_path'] / ppo_checkpoint_path
-        self.cfg['paths']['ppo_checkpoint_zip'] = self.cfg['paths']['ppo_checkpoint_path'] / ppo_checkpoint_zip
+        self.cfg['paths']['ppo_checkpoint_zip'] = self.cfg['paths']['checkpoints_path'] / ppo_checkpoint_zip
 
 
 class Config_Args():
@@ -182,7 +180,6 @@ class Config_Args():
             "  mps\n"
             "  cuda\n"
             "  cpu\n"
-            "  --environment\n"
             "\n"
             "  dir\n"
             "  --artifacts_path=<dir>\n"
@@ -222,13 +219,13 @@ class Config_Args():
         '''
         Parse through the arguments input at runtime.
         '''
-        valid = ["encoder", "model", "device", "environment",
-                 "artifacts_path", "scenarios_path", "trajectories_path",
-                 "relabeled_path", "embeddings_path", "checkpoints_path",
-                 "ppo_logs_path", "export_path", "bc_checkpoint_path",
-                 "ppo_checkpoint_path", "collect", "relabel", "bc", "ppo",
-                 "eval", "export", "policy", "episodes", "epochs", "timesteps",
-                 "debug", "test"]
+        valid = ["encoder", "model", "device", "artifacts_path",
+                 "scenarios_path", "trajectories_path", "relabeled_path",
+                 "embeddings_path", "checkpoints_path", "ppo_logs_path",
+                 "export_path", "bc_checkpoint_path", "ppo_checkpoint_path",
+                 "collect", "relabel", "bc", "ppo", "eval", "export",
+                 "policy", "episodes", "epochs", "timesteps", "debug",
+                 "test"]
 
         parser = argparse.ArgumentParser("")
         for v in valid:
@@ -243,9 +240,6 @@ class Config_Args():
                 self.dc.choose_model(getattr(args, arg))
             elif arg == "device":
                 self.dc.choose_device(getattr(args, arg))
-            elif arg == "environment":
-                if (getattr(args, arg) == None):
-                    self.cfg['environment'] = True
             elif arg == "artifacts_path":
                 if (getattr(args, arg) != ''):
                     self.dc.choose_artifacts_path(getattr(args, arg))
@@ -326,7 +320,6 @@ class Config():
             "device": None,
             "pretrained": None,
             "encoder": False,
-            "environment": False,
             "collect": False,
             "relabel": False,
             "bc": False,
