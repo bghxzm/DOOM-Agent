@@ -26,10 +26,10 @@ class ViZDoom_Env_Test():
         self.encoder = encoder
         self.buffer = buffer
         self.transformer = transformer
-        self.scenario_path = self.config['scenario_path']
-        self.artifacts_path = self.config['artifacts_path']
+        self.scenarios_path = self.config['paths']['scenarios_path']
+        self.artifacts_path = self.config['paths']['artifacts_path']
         self.eps = Episode()
-        self.g = Game(path=self.scenario_path)
+        self.g = Game(config=self.config)
         self.policy_head = None
 
     def init(self):

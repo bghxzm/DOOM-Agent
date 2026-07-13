@@ -23,9 +23,6 @@ class Policy_Head(nn.Module):
         super().__init__()
         self.linear = nn.Linear(hidden_dim, num_actions)
 
-    def init(self):
-        pass
-
     def forward(self, hidden_state):
         '''
         The linear layer outputs raw scores called logits.  Logits are

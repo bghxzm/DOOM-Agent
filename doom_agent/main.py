@@ -15,7 +15,7 @@ from encoder.clip_encoder import CLIP_Encoder
 from environment.vizdoom_env import ViZDoom_Env
 from training.bc_trainer import BC_Trainer
 from training.ppo_trainer import PPO_Trainer
-from test.clip_encoder_test import OG_CLIP_Encoder_Test
+from test.clip_encoder_test import CLIP_Encoder_Test
 from test.vizdoom_env_test import ViZDoom_Env_Test
 
 
@@ -28,7 +28,7 @@ def main():
     cfg.print_config()
 
     if cfg.config['encoder'] and cfg.config['test']:
-        encoder = OG_CLIP_Encoder_Test(config=cfg.config)
+        encoder = CLIP_Encoder_Test(config=cfg.config)
         encoder.init()
         encoder.run_open_clip()
         encoder.test_clip()
@@ -59,7 +59,6 @@ def main():
         return
     elif cfg.config['relabel']:
         relabeler = Relabeler(config=cfg.config)
-        relabeler.init()
         relabeler.relabel()
         relabeler.inspect()
         return
@@ -67,14 +66,12 @@ def main():
         encoder = CLIP_Encoder(config=cfg.config)
         encoder.init()
         bc_trainer = BC_Trainer(config=cfg.config, encoder=encoder)
-        bc_trainer.init()
         bc_trainer.train(epochs=cfg.config['epochs'])
         return
     elif cfg.config['ppo']:
         encoder = CLIP_Encoder(config=cfg.config)
         encoder.init()
         ppo_trainer = PPO_Trainer(config=cfg.config, encoder=encoder)
-        ppo_trainer.init()
         ppo_trainer.train(total_timesteps=cfg.config['timesteps'])
         return
 
@@ -84,15 +81,12 @@ def main():
     encoder = CLIP_Encoder(config=cfg.config)
 
     collector.init()
-    relabeler.init()
     encoder.init()
 
     bc_trainer = BC_Trainer(config=cfg.config, encoder=encoder)
     ppo_trainer = PPO_Trainer(config=cfg.config, encoder=encoder)
     agent = Agent(config=cfg.config, encoder=encoder)
 
-    bc_trainer.init()
-    ppo_trainer.init()
     agent.init()
 
     # 1. Collect demo trajectories

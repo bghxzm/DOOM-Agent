@@ -9,7 +9,6 @@ game.py
 """
 
 from argparse import ArgumentParser
-from pathlib import Path
 import itertools
 import vizdoom as vzd
 
@@ -18,8 +17,9 @@ class Game():
     """
     Game Handler
     """
-    def __init__(self, path="./scenarios"):
-        self.path = Path(path)
+    def __init__(self, config):
+        self.config = config
+        self.path = self.config['paths']['scenarios_path']
         self.game = None
         self.game_cfg = None
         self.actions = []

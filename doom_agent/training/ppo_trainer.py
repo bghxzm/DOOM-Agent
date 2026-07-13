@@ -8,8 +8,6 @@ Proximal Policy Optimization via Stable Baselines3
 ppo_trainer.py
 """
 
-from pathlib import Path
-
 import gymnasium as gym
 import numpy as np
 import torch
@@ -43,7 +41,7 @@ class Doom_Gym_Env(gym.Env):
         self.instruction = instruction
         self.frame_repeat = frame_repeat
 
-        self.g = Game(path=self.config['scenario_path'])
+        self.g = Game(config=self.config)
         self.g.init(resolution=vzd.ScreenResolution.RES_320X240, visible=False)
 
         self.buffer = Buffer()
@@ -144,14 +142,13 @@ class PPO_Trainer():
     def __init__(self, config=None, encoder=None):
         self.config = config
         self.encoder = encoder
-        self.artifacts_path = Path(self.config['artifacts_path'])
-        self.checkpoints_path = self.artifacts_path / "checkpoints"
-        self.logs_path = self.artifacts_path / "ppo_logs"
+        self.artifacts_path = self.config['paths']['artifacts_path']
+        self.checkpoints_path = self.config['paths']['checkpoints_path']
+        self.ppo_logs_path = self.config['paths']['ppo_logs_path']
+        self.bc_checkpoint = self.config['paths']['bc_checkpoint_path']
+        self.ppo_checkpoint = self.config['paths']['ppo_checkpoint_path']
+        self.ppo_checkpoint_zip = self.config['paths']['ppo_checkpoint_zip']
         self.model = None
-
-    def init(self):
-        self.logs_path.mkdir(parents=True, exist_ok=True)
-        self.checkpoints_path.mkdir(parents=True, exist_ok=True)
 
     def load_bc_weights(self, checkpoint_path):
         '''
@@ -203,7 +200,7 @@ class PPO_Trainer():
         env = Monitor(
             Doom_Gym_Env(config=self.config, encoder=self.encoder,
                          instruction=instruction),
-            str(self.logs_path / "ppo"))
+            str(self.ppo_logs_path / "ppo"))
 
         self.model = PPO(
             "MlpPolicy",
@@ -221,14 +218,12 @@ class PPO_Trainer():
             device=self.config['device']
         )
 
-        bc_checkpoint = self.checkpoints_path / "bc_policy.pt"
-        if bc_checkpoint.exists():
-            self.load_bc_weights(bc_checkpoint)
+        if self.bc_checkpoint.exists():
+            self.load_bc_weights(self.bc_checkpoint)
         else:
             print("Training Proximal Policy Optimization from scratch.")
 
         self.model.learn(total_timesteps=total_timesteps)
-        self.model.save(self.checkpoints_path / "ppo_policy")
-        print(f"Saved PPO checkpoint to "
-              f"{self.checkpoints_path / 'ppo_policy.zip'}")
+        self.model.save(self.ppo_checkpoint)
+        print(f"Saved PPO checkpoint to " f"{self.ppo_checkpoint_zip}")
         env.close()

@@ -78,9 +78,6 @@ class Temporal_Transformer(nn.Module):
         pe[:, 1::2] = torch.cos(position * div_term)
         return pe # [max_len, hidden_dim]
 
-    def init(self):
-        pass
-
     def forward(self, x):
         '''
         Step 3 - Casual Masking

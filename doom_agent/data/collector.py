@@ -8,7 +8,6 @@ Scripted play trajectory collection.
 collector.py
 """
 
-from pathlib import Path
 from random import randrange, random
 import pickle
 
@@ -26,10 +25,10 @@ class Collector():
     """
     def __init__(self, config=None):
         self.config = config
-        self.scenario_path = self.config['scenario_path']
-        self.artifacts_path = self.config['artifacts_path']
-        self.trajectories_path = Path(self.artifacts_path) / "trajectories"
-        self.g = Game(path=self.scenario_path)
+        self.artifacts_path = self.config['paths']['artifacts_path']
+        self.scenarios_path = self.config['paths']['scenarios_path']
+        self.trajectories_path = self.config['paths']['trajectories_path']
+        self.g = Game(config=self.config)
         self.last_action_idx = None
 
     def init(self):
@@ -38,9 +37,7 @@ class Collector():
         rendering.  Resolution is dropped to 320x240 because CLIP preprocessing
         resizes/center-crops to 224x224.
         '''
-        self.g.init(resolution=vzd.ScreenResolution.RES_320X240,
-                    visible=False)
-        self.trajectories_path.mkdir(parents=True, exist_ok=True)
+        self.g.init(resolution=vzd.ScreenResolution.RES_320X240, visible=False)
 
     def scripted_action(self, sticky=0.7):
         '''

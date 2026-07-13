@@ -10,7 +10,6 @@ agent.py
 
 import json
 import shutil
-from pathlib import Path
 
 import pandas as pd
 import torch
@@ -35,8 +34,19 @@ class Agent():
         self.config = config
         self.encoder = encoder
         self.device = self.config['device']
-        self.artifacts_path = Path(self.config['artifacts_path'])
-        self.checkpoints_path = self.artifacts_path / "checkpoints"
+        self.artifacts_path = self.config['paths']['artifacts_path']
+        self.checkpoints_path = self.config['paths']['checkpoints_path']
+        self.bc_checkpoint = self.config['paths']['bc_checkpoint_path']
+        self.ppo_policy = self.config['paths']['ppo_checkpoint_path']
+        self.ppo_checkpoint = self.config['paths']['ppo_checkpoint_zip']
+        self.export_path = self.config['paths']['export_path']
+
+        self.MOVE_LEFT = self.config['game']["MOVE_LEFT"]
+        self.MOVE_RIGHT = self.config['game']["MOVE_RIGHT"]
+        self.ATTACK = self.config['game']["ATTACK"]
+        self.KILL_REWARD_THRESHOLD = self.config['game']["KILL_REWARD_THRESHOLD"]
+        self.MIN_RUN_LENGTH = self.config['game']["MIN_RUN_LENGTH"]
+
         self.g = None
         self.buffer = None
         self.transformer = None
@@ -48,7 +58,7 @@ class Agent():
         Game and models are built here rather than __init__ so that the
         export path can use an Agent without paying any startup cost.
         '''
-        self.g = Game(path=self.config['scenario_path'])
+        self.g = Game(config=self.config)
         self.g.init(resolution=vzd.ScreenResolution.RES_320X240, visible=False)
         self.buffer = Buffer()
         self.buffer.init()
@@ -70,15 +80,13 @@ class Agent():
         self.policy_name = policy
 
         if policy == "bc":
-            ckpt = torch.load(self.checkpoints_path / "bc_policy.pt",
-                             map_location=self.device)
+            ckpt = torch.load(self.bc_checkpoint, map_location=self.device)
             self.transformer.load_state_dict(ckpt["transformer"])
             self.policy_head.load_state_dict(ckpt["policy_head"])
             print(f"Loaded BC checkpoint "
                   f"(epoch {ckpt['epoch']}, val acc {ckpt['val_acc']:.3f})")
         elif policy == "ppo":
-            model = PPO.load(self.checkpoints_path / "ppo_policy",
-                             device="cpu")
+            model = PPO.load(self.ppo_policy, device="cpu")
             self.transformer.load_state_dict(
                 model.policy.features_extractor.transformer.state_dict())
             with torch.no_grad():
@@ -141,7 +149,7 @@ class Agent():
                     reward = self.g.game.make_action(
                         self.g.actions[action_idx], frame_repeat)
                     decisions += 1
-                    if reward > self.config['KILL_REWARD_THRESHOLD']:
+                    if reward > self.KILL_REWARD_THRESHOLD:
                         success, to_kill = True, decisions
 
             total = self.g.game.get_total_reward()
@@ -184,14 +192,11 @@ class Agent():
         environments the "no retraining" comparison will measure pipeline
         mismatch instead of generalization.
         '''
-        export_path = self.artifacts_path / "export"
-        export_path.mkdir(parents=True, exist_ok=True)
-
-        bc_ckpt = self.checkpoints_path / "bc_policy.pt"
-        ppo_ckpt = self.checkpoints_path / "ppo_policy.zip"
+        bc_ckpt = self.bc_checkpoint
+        ppo_ckpt = self.ppo_checkpoint
         for ckpt in (bc_ckpt, ppo_ckpt):
             if ckpt.exists():
-                shutil.copy2(ckpt, export_path / ckpt.name)
+                shutil.copy2(ckpt, self.export_path / ckpt.name)
 
         instructions = []
         if bc_ckpt.exists():
@@ -240,6 +245,6 @@ class Agent():
                     "succesful episodes only",
             },
         }
-        with open(export_path / "manifest.json", "w") as f:
+        with open(self.export_path / "manifest.json", "w") as f:
             json.dump(manifest, f, indent=2)
-        print(f"Export bundle written to {export_path}")
+        print(f"Export bundle written to {self.export_path}")

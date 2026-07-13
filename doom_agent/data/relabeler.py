@@ -9,7 +9,6 @@ relabeler.py
 """
 
 from collections import Counter
-from pathlib import Path
 import pickle
 
 
@@ -26,19 +25,16 @@ class Relabeler():
     """
     def __init__(self, config=None):
         self.cfg = config
-        self.artifacts_path = self.cfg['artifacts_path']
-        self.trajectories_path = Path(self.artifacts_path) / "trajectories"
-        self.relabled_path = Path(self.artifacts_path) / "relabeled"
+        self.artifacts_path = self.cfg['paths']['artifacts_path']
+        self.trajectories_path = self.cfg['paths']['trajectories_path']
+        self.relabled_path = self.cfg['paths']['relabeled_path']
         self.stats = Counter()
 
-        self.MOVE_LEFT = self.cfg["MOVE_LEFT"]
-        self.MOVE_RIGHT = self.cfg["MOVE_RIGHT"]
-        self.ATTACK = self.cfg["ATTACK"]
-        self.KILL_REWARD_THRESHOLD = self.cfg["KILL_REWARD_THRESHOLD"]
-        self.MIN_RUN_LENGTH = self.cfg["MIN_RUN_LENGTH"]
-
-    def init(self):
-        self.relabled_path.mkdir(parents=True, exist_ok=True)
+        self.MOVE_LEFT = self.cfg['game']["MOVE_LEFT"]
+        self.MOVE_RIGHT = self.cfg['game']["MOVE_RIGHT"]
+        self.ATTACK = self.cfg['game']["ATTACK"]
+        self.KILL_REWARD_THRESHOLD = self.cfg['game']["KILL_REWARD_THRESHOLD"]
+        self.MIN_RUN_LENGTH = self.cfg['game']["MIN_RUN_LENGTH"]
 
     def _buttons(self, step, actions_table):
         '''
@@ -60,8 +56,7 @@ class Relabeler():
         '''
         return {
             "instruction": instruction,
-            "steps": [{**s, "subgoal": instruction}
-                      for s in steps[start:end]]
+            "steps": [{**s, "subgoal": instruction} for s in steps[start:end]]
         }
 
     def _label_kill(self, steps, actions_table):

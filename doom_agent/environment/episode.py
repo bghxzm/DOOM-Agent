@@ -8,7 +8,6 @@ ViZDoom episode handler
 episode.py
 """
 
-from pathlib import Path
 import pandas as pd
 import vizdoom as vzd
 
@@ -17,7 +16,8 @@ class Episode():
     """
     Episode Handler
     """
-    def __init__(self):
+    def __init__(self, config):
+        self.config = config
         self.episode_log = {
             "num": [],
             "states": [],
@@ -74,11 +74,11 @@ class Episode():
         for (key, value) in self.episode_log.items():
             print(f"{key}: {value}")
 
-    def output_episode(self, game_cfg="", path="./artifacts"):
+    def output_episode(self, game_cfg=""):
         """
         Show all of the scenario information.
         """
-        path = Path(path)
+        path = self.config['artifacts']
         output_log = dict(list(self.episode_log.items())[:-1])
         df = pd.DataFrame(output_log)
         out = game_cfg.replace(".", "_") + "_episode.xlsx"

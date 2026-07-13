@@ -9,7 +9,6 @@ bc_trainer.py
 """
 
 from collections import Counter
-from pathlib import Path
 import pickle
 
 import torch
@@ -35,19 +34,16 @@ class BC_Trainer():
         self.config = config
         self.encoder = encoder
         self.device = self.config['device']
-        self.artifacts_path = Path(self.config['artifacts_path'])
-        self.relabeled_path = self.artifacts_path / "relabeled"
-        self.embeddings_path = self.artifacts_path / "embeddings"
-        self.checkpoints_path = self.artifacts_path / "checkpoints"
+        self.artifacts_path = self.config['paths']['artifacts_path']
+        self.relabeled_path = self.config['paths']['relabeled_path']
+        self.embeddings_path = self.config['paths']['embeddings_path']
+        self.checkpoints_path = self.config['paths']['checkpoints_path']
+        self.bc_checkpoint = self.config['paths']['bc_checkpoint_path']
         self.transformer = None
         self.policy_head = None
         self.num_actions = None
         self.goal_cache = {}
         self.instructions = []
-
-    def init(self):
-        self.embeddings_path.mkdir(parents=True, exist_ok=True)
-        self.checkpoints_path.mkdir(parents=True, exist_ok=True)
 
     def register_goal(self, instruction, goal_emb):
         '''
@@ -240,7 +236,7 @@ class BC_Trainer():
             "epoch": epoch,
             "val_acc": val_acc,
         }
-        torch.save(checkpoint, self.checkpoints_path / "bc_policy.pt")
+        torch.save(checkpoint, self.bc_checkpoint)
 
     def train(self, epochs=30, batch_size=64, lr=3e-4):
         '''

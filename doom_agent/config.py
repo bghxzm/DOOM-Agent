@@ -19,7 +19,7 @@ import torch
 #
 MODELS = {
     "ViT-B-32": "laion2b_s34b_b79k", # Smaller ViT - baseline
-    "ViT-L-14": "laion2b_s32b_b82k", # Larger ViT   - larger size impact
+    "ViT-L-14": "laion2b_s32b_b82k", # Larger ViT - larger size impact
     "convnext_base_w": "laion2b_s13b_b82k_augreg", # ConvNet architecture
 }
 
@@ -50,114 +50,111 @@ class Default_Config():
     def __init__(self, config=None):
         self.project_root = Path(__file__).resolve().parent.parent
         self.cfg = config
-        self.model = self.cfg['model']
-        self.pretrained = self.cfg['pretrained']
-        self.device = self.cfg['device']
-        self.paths = self.cfg['paths']
 
     def choose_model(self, model_name="ViT-B-32"):
         '''
         Configure which model to use.
         '''
+        print(f"choosing model!")
         if model_name not in MODELS:
-            self.model = "ViT-B-32"
-            self.pretrained = MODELS[self.model]
+            self.cfg['model'] = "ViT-B-32"
+            self.cfg['pretrained'] = MODELS[self.cfg['model']]
         else:
-            self.model = model_name
-            self.pretrained = MODELS[model_name]
+            self.cfg['model'] = model_name
+            self.cfg['pretrained'] =  MODELS[model_name]
 
     def choose_device(self, device_name=""):
         '''
         Configure which torch device to use.
         '''
         if device_name not in DEVICES:
-            self.device = (
+            self.cfg['device'] = (
                 "mps" if torch.backends.mps.is_available() else
                 "cuda" if torch.cuda.is_available() else
                 "cpu"
             )
         else:
-            self.device = device_name
+            self.cfg['device'] = device_name
 
     def configure_path(self, path_idx, path_to_assign):
         '''
         Check if the path exists.  If it does not, then create one.
         '''
         if path_to_assign.is_dir():
-            self.paths[path_idx] = path_to_assign
+            self.cfg['paths'][path_idx] = path_to_assign
         else:
-            self.paths[path_idx].mkdir(parents=True, exist_ok=True)
+            self.cfg['paths'][path_idx].mkdir(parents=True, exist_ok=True)
 
     def choose_artifacts_path(self, artifacts_path="artifacts"):
         '''
         Configure which artifacts path to use.
         '''
-        path = self.project_root / artifacts_path
+        path = Path(self.project_root / artifacts_path)
         self.configure_path('artifacts_path', path)
 
     def choose_scenarios_path(self, scenarios_path="scenarios"):
         '''
         Configure which scenarios path to use.
         '''
-        path = self.project_root / scenarios_path
+        path = Path(self.project_root / scenarios_path)
         self.configure_path('scenarios_path', path)
 
     def choose_trajectories_path(self, trajectories_path="trajectories"):
         '''
         Configure which trajectories path to use.
         '''
-        path = self.paths['artifacts_path'] / trajectories_path
+        path = self.cfg['paths']['artifacts_path'] / trajectories_path
         self.configure_path('trajectories_path', path)
 
     def choose_relabeled_path(self, relabeled_path="relabeled"):
         '''
         Configure which relabeled path to use.
         '''
-        path = self.paths['artifacts_path'] / relabeled_path
+        path = self.cfg['paths']['artifacts_path'] / relabeled_path
         self.configure_path('relabeled_path', path)
 
     def choose_embeddings_path(self, embeddings_path="embeddings"):
         '''
         Configure which embeddings path to use.
         '''
-        path = self.paths['artifacts_path'] / embeddings_path
+        path = self.cfg['paths']['artifacts_path'] / embeddings_path
         self.configure_path('embeddings_path', path)
 
     def choose_checkpoints_path(self, checkpoints_path="checkpoints"):
         '''
         Configure which checkpoints path to use.
         '''
-        path = self.paths['artifacts_path'] / checkpoints_path
+        path = self.cfg['paths']['artifacts_path'] / checkpoints_path
         self.configure_path('checkpoints_path', path)
 
     def choose_ppo_logs_path(self, ppo_logs_path="ppo_logs"):
         '''
         Configure which ppo_logs path to use.
         '''
-        path = self.paths['artifacts_path'] / ppo_logs_path
+        path = self.cfg['paths']['artifacts_path'] / ppo_logs_path
         self.configure_path('ppo_logs_path', path)
 
     def choose_export_path(self, export_path="export"):
         '''
         Configure which export path to use.
         '''
-        path = self.paths['artifacts_path'] / export_path
+        path = self.cfg['paths']['artifacts_path'] / export_path
         self.configure_path('export_path', path)
 
     def choose_bc_checkpoint_path(self, bc_checkpoint_path="bc_policy"):
         '''
         Configure which behavior cloning checkpoint path to use.
         '''
-        bc_policy_pt =  bc_checkpoint_path + ".pt"
-        self.paths['bc_checkpoint_path'] = self.paths['checkpoints_path'] / bc_policy_pt
+        bc_policy_pt = bc_checkpoint_path + ".pt"
+        self.cfg['paths']['bc_checkpoint_path'] = self.cfg['paths']['checkpoints_path'] / bc_policy_pt
 
     def choose_ppo_checkpoint_path(self, ppo_checkpoint_path="ppo_policy"):
         '''
         Configure which ppo_policy path to use.
         '''
-        ppo_checkpoint_zip =  ppo_checkpoint_path + ".zip"
-        self.paths['ppo_checkpoint_path'] = self.paths['checkpoints_path'] / ppo_checkpoint_path
-        self.paths['ppo_checkpoint_zip'] = self.paths['ppo_checkpoint_path'] / ppo_checkpoint_zip
+        ppo_checkpoint_zip = ppo_checkpoint_path + ".zip"
+        self.cfg['paths']['ppo_checkpoint_path'] = self.cfg['paths']['checkpoints_path'] / ppo_checkpoint_path
+        self.cfg['paths']['ppo_checkpoint_zip'] = self.cfg['paths']['ppo_checkpoint_path'] / ppo_checkpoint_zip
 
 
 class Config_Args():

@@ -26,10 +26,10 @@ class ViZDoom_Env():
         self.encoder = encoder
         self.buffer = buffer
         self.transformer = transformer
-        self.scenario_path = self.config['scenario_path']
-        self.artifacts_path = self.config['artifacts_path']
-        self.eps = Episode()
-        self.g = Game(path=self.scenario_path)
+        self.scenarios_path = self.config['paths']['scenarios_path']
+        self.artifacts_path = self.config['paths']['artifacts_path']
+        self.eps = Episode(self.config)
+        self.g = Game(self.config)
         self.policy_head = None
 
     def init(self):
@@ -117,6 +117,6 @@ class ViZDoom_Env():
                 if sleep_time > 0:
                     sleep(sleep_time)
 
-        self.eps.output_episode(game_cfg=self.g.game_cfg, path=self.artifacts_path)
+        self.eps.output_episode(game_cfg=self.g.game_cfg)
         self.eps.clean_episode()
         self.g.game.close()
